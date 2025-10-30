@@ -1,0 +1,9 @@
+# requirements.txt
+
+# Core Computer Vision and Data Processing
+opencv-python-headless  # OpenCV without GUI dependencies (better for Codespaces)
+numpy
+mediapipe               # Pose estimation framework
+
+# Optional: Streamlit for Web UI (recommended for visualization in remote environments)
+streamlit

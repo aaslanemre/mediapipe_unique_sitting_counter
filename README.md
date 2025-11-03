@@ -7,7 +7,13 @@ This project implements a stable and focused solution using **MediaPipe Pose** t
 The script processes a video file, applies pose estimation, uses positional heuristics for sitting detection, and assigns temporary IDs to accurately track and count each person only once.
 
 -----
+## 📸 Application Screenshot
 
+Here is the live output of the analyzer, showing the pose estimation, tracking ID, and unique sitting count:
+
+<img src="[YOUR_IMAGE_URL_HERE](https://github.com/aaslanemre/mediapipe_unique_sitting_counter/blob/main/copacabana_sitpose.png)" alt="Screenshot of the MediaPipe sitting counter output with pose estimation overlay." width="700">
+
+---
 ## Prerequisites and Setup
 
 This project is built around the need for a specific, stable Python environment.

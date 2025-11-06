@@ -11,6 +11,8 @@ The script processes a video file, applies pose estimation, uses positional heur
 
 Here is the live output of the analyzer, showing the pose estimation, tracking ID, and unique sitting count:
 
+<img src="https://github.com/aaslanemre/mediapipe_unique_sitting_counter/blob/main/copacabana_sitpose.png" alt="Screenshot of the MediaPipe sitting counter output with pose estimation overlay." width="700">
+
 <img src="https://github.com/aaslanemre/mediapipe_unique_sitting_counter/blob/main/mask_applied.png" alt="Screenshot of the MediaPipe sitting counter output with pose estimation overlay." width="700">
 
 ---

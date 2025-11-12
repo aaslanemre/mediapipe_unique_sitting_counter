@@ -3,7 +3,7 @@ import numpy as np
 from ultralytics import YOLO
 import os
 import sys
-from datetime import datetime # ADDED
+from datetime import datetime
 import config as cfg
 import utils
 
@@ -32,16 +32,14 @@ def analyze_video_for_sitting():
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS)
 
-    # --- VIDEO WRITER SETUP (MODIFIED FOR UNIQUE NAME) ---
+    # --- VIDEO WRITER SETUP (Unique Name) ---
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     
-    # Generate unique timestamp (e.g., _20251112_124500)
     timestamp = datetime.now().strftime("_%Y%m%d_%H%M%S")
     
-    # Split the original filename to insert the timestamp before the extension
     base_name, ext = os.path.splitext(cfg.OUTPUT_VIDEO_NAME)
     unique_file_name = f"{base_name}{timestamp}{ext}"
-    unique_save_path = os.path.join(cfg.OUTPUT_DIR, unique_file_name) # NEW PATH
+    unique_save_path = os.path.join(cfg.OUTPUT_DIR, unique_file_name) 
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(unique_save_path, fourcc, fps, (frame_width, frame_height))
@@ -73,7 +71,25 @@ def analyze_video_for_sitting():
         mask_pixel_x = int(cfg.MONUMENT_MASK_X_MAX * frame_width)
         cv2.rectangle(vis_frame, (0, 0), (mask_pixel_x, frame_height), (0, 0, 100), -1)
         cv2.putText(vis_frame, "EXCLUSION ZONE", (10, frame_height - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+
+        # --- NEW: DRAW BENCH BOUNDARY BOX (Visualization) ---
+        x_min_px = int(cfg.BENCH_X_MIN * frame_width)
+        x_max_px = int(cfg.BENCH_X_MAX * frame_width)
+        y_min_px = int(cfg.BENCH_Y_MIN * frame_height)
+        y_max_px = int(cfg.BENCH_Y_MAX * frame_height)
         
+        box_color = (255, 255, 0) 
+        line_thickness = 2
+        
+        # Draw the rectangle with a simple dashed look (for clearer visualization)
+        cv2.line(vis_frame, (x_min_px, y_min_px), (x_max_px, y_min_px), box_color, line_thickness)
+        for x in range(x_min_px, x_max_px, 10): 
+             cv2.line(vis_frame, (x, y_max_px), (x + 5, y_max_px), box_color, line_thickness)
+        cv2.line(vis_frame, (x_min_px, y_min_px), (x_min_px, y_max_px), box_color, line_thickness)
+        cv2.line(vis_frame, (x_max_px, y_min_px), (x_max_px, y_max_px), box_color, line_thickness)
+        
+        cv2.putText(vis_frame, "BENCH ZONE", (x_min_px + 5, y_min_px - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, box_color, 1, cv2.LINE_AA)
+        # ---------------------------------------------------
         
         # --- 3. COUNTING & TRACKING LOOP ---
         current_feedback = "NO DETECTION"
@@ -90,12 +106,12 @@ def analyze_video_for_sitting():
                 
                 # A. MASK CHECK
                 if utils.is_inside_mask(kpts_normalized):
-                    keypoints_to_draw.append((kpts_pixel, (100, 100, 100))) # Gray
+                    keypoints_to_draw.append((kpts_pixel, (100, 100, 100))) 
                     current_feedback = "MASKED"
                     current_feedback_color = (100, 100, 100)
                     continue
                 
-                # B. SITTING CHECK (Uses Condition 1 only from utils.py)
+                # B. SITTING CHECK (Uses combined Posture AND Spatial checks from utils.py)
                 is_person_sitting = utils.is_sitting_heuristic(kpts_normalized, frame_height)
                 
                 # C. SIMPLE TRACKING/ID ASSIGNMENT
@@ -126,12 +142,11 @@ def analyze_video_for_sitting():
                     current_feedback = feedback
                     current_feedback_color = color
                 else:
-                    feedback = "NOT SITTING"
+                    feedback = "NOT COUNTED"
                     color = (0, 165, 255) # Orange
 
                 keypoints_to_draw.append((kpts_pixel, color))
 
-                # Draw feedback text (using the box of the first person detected)
                 if result.boxes is not None and len(result.boxes.xyxy) > 0:
                     box = result.boxes.xyxy.cpu().numpy()[0] 
                     x1, y1 = map(int, box[:2])

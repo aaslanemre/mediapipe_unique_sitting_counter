@@ -2,8 +2,6 @@ import cv2
 import numpy as np
 import config as cfg
 
-# --- HELPER FUNCTIONS ---
-
 def is_inside_mask(kpts_normalized):
     """Checks if the person's center (mid-hip) is inside the exclusion zone."""
     try:
@@ -19,25 +17,44 @@ def is_inside_mask(kpts_normalized):
 
 
 def is_sitting_heuristic(kpts_normalized, height):
-    """Determines if a person is sitting using the Hip-Knee vertical difference."""
+    """
+    Determines if a person is sitting by checking two conditions:
+    1. Posture Check: Hip-Knee proximity (legs are bent).
+    2. Spatial Check: Both hips must be inside the defined BENCH rectangle.
+    """
     try:
-        # Calculate Y positions in pixels
+        # --- 1. POSTURE CHECK (Hip-Knee Proximity) ---
         l_hip_y_px = kpts_normalized[cfg.LEFT_HIP_IDX][1] * height
         l_knee_y_px = kpts_normalized[cfg.LEFT_KNEE_IDX][1] * height
         r_hip_y_px = kpts_normalized[cfg.RIGHT_HIP_IDX][1] * height
         r_knee_y_px = kpts_normalized[cfg.RIGHT_KNEE_IDX][1] * height
         
-        # Normalized Hip-Knee Y-difference
         l_diff = abs(l_hip_y_px - l_knee_y_px) / height
         r_diff = abs(r_hip_y_px - r_knee_y_px) / height
         
-        # Condition 1: Small vertical difference (legs are bent/horizontal)
-        if l_diff < cfg.HIP_KNEE_Y_DIFF_MAX or r_diff < cfg.HIP_KNEE_Y_DIFF_MAX:
-            # Condition 2: Hips are in the lower half of the frame (not standing high up)
-            # if (l_hip_y_px / height > 0.4) or (r_hip_y_px / height > 0.4):
-            return True
+        is_posture_sitting = l_diff < cfg.HIP_KNEE_Y_DIFF_MAX or r_diff < cfg.HIP_KNEE_Y_DIFF_MAX
+
+
+        # --- 2. SPATIAL CHECK (Hips on Bench Location) ---
+        l_hip_x = kpts_normalized[cfg.LEFT_HIP_IDX][0]
+        l_hip_y = kpts_normalized[cfg.LEFT_HIP_IDX][1]
+        r_hip_x = kpts_normalized[cfg.RIGHT_HIP_IDX][0]
+        r_hip_y = kpts_normalized[cfg.RIGHT_HIP_IDX][1]
         
-        return False
+        l_hip_on_bench = (
+            (l_hip_x >= cfg.BENCH_X_MIN) and (l_hip_x <= cfg.BENCH_X_MAX) and
+            (l_hip_y >= cfg.BENCH_Y_MIN) and (l_hip_y <= cfg.BENCH_Y_MAX)
+        )
+        
+        r_hip_on_bench = (
+            (r_hip_x >= cfg.BENCH_X_MIN) and (r_hip_x <= cfg.BENCH_X_MAX) and
+            (r_hip_y >= cfg.BENCH_Y_MIN) and (r_hip_y <= cfg.BENCH_Y_MAX)
+        )
+        
+        is_spatial_on_bench = l_hip_on_bench and r_hip_on_bench
+        
+        # --- FINAL RESULT: BOTH CONDITIONS MUST BE TRUE ---
+        return is_posture_sitting and is_spatial_on_bench
         
     except IndexError:
         return False

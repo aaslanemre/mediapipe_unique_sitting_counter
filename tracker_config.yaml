@@ -1,0 +1,8 @@
+tracker_type: bytetrack
+track_high_thresh: 0.5
+track_low_thresh: 0.1
+new_track_thresh: 0.7
+# This is the key change: 
+# Increase the memory to 3 seconds (at 30 FPS) to bridge occlusion gaps
+track_buffer: 90 
+match_thresh: 0.8

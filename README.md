@@ -6,11 +6,6 @@ This project implements a stable and focused solution using **MediaPipe Pose** t
 
 The script processes a video file, applies pose estimation, uses positional heuristics for sitting detection, and assigns temporary IDs to accurately track and count each person only once.
 
------
-## 📸 Application Screenshot
-
-Here is the live output of the analyzer, showing the pose estimation, tracking ID, and unique sitting count:
-
 
 ---
 ## Prerequisites and Setup
